@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css"
+    />
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://unpkg.com/hyperscript.org@0.9.11"></script>
+    <title>Modern Todo</title>
+  </head>
+
+  <style>
+    /* HTMX related */
+    article.removing {
+      opacity: 0;
+      transform: translateY(-50px);
+      transition-property: opacity, transform;
+      transition: 600ms ease-out;
+    }
+
+    #loader {
+      animation: loading-todos 2s ease-out;
+    }
+
+    @keyframes loading-todos {
+      60% {
+        opacity: 1;
+      }
+
+      to {
+        opacity: 0;
+      }
+    }
+
+    /* Global elements */
+    article[id]:first-of-type {
+      margin-block: 0px;
+    }
+
+    button.outline.error {
+      border-color: salmon;
+      color: salmon;
+    }
+
+    @media (min-width: 1000px) {
+      nav {
+        position: sticky;
+        top: 0;
+        backdrop-filter: blur(12px);
+      }
+
+      .grid {
+        column-gap: 4rem;
+      }
+
+      section:first-of-type {
+        position: sticky;
+        top: 65px;
+        height: calc(65px - 100vh);
+      }
+    }
+  </style>
+
+  <body _="on htmx:responseError alert('Someting went wrong')">
+    <nav class="container-fluid">
+      <ul>
+        <li>
+          <strong>
+            <a href="/"> Modern Todo </a>
+          </strong>
+        </li>
+      </ul>
+      <ul>
+        <li>
+          <a href="//github.com/Fallen-dev/BH2-stack-todo-list" role="button"
+            >View on GitHub</a
+          >
+        </li>
+      </ul>
+    </nav>
+    <main class="container">
+      <div class="grid">
+        <section>
+          <h5>What to do now?</h5>
+          <form
+            method="post"
+            hx-post="/html/todos"
+            hx-target="next section"
+            hx-swap="innerHTML"
+            _="on submit reset() me"
+          >
+            <input
+              type="text"
+              name="input"
+              placeholder="Type here"
+              autocomplete="off"
+              autofocus
+              required
+            />
+            <button type="submit">Create</button>
+          </form>
+        </section>
+
+        <section
+          hx-get="/html/todos"
+          hx-trigger="load"
+          hx-swap="innerHTML"
+          hx-indicator="#loader"
+          _="on htmx:afterSwap remove @hx-indicator from me"
+        >
+          <!-- Need to remove hx-indicator after swapping is done or it will complain error that below the #loader is not found -->
+          <article id="loader" aria-busy="true" class="htmx-indicator">
+            Loading todos, please wait…
+          </article>
+          <!-- Rest will be added dynamically -->
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
